@@ -42,12 +42,7 @@ public class ImageController {
      * 이번 주(월~일) 이미지 목록
      */
     @GetMapping("/week")
-    public WeekResult week(@RequestPart @NotNull Long userId) {
-        List<ImageItem> list = service.getThisWeekImages(userId, ZoneId.of("Asia/Seoul"));
-
-        List<WeekItem> items = list.stream()
-                .map(i -> new WeekItem(i.getId(), i.getUrl(), i.getCreatedAt().toString())).toList();
-
-        return new WeekResult("OK", items);
+    public WeekImagesResponse week(@RequestParam @NotNull Long userId) {
+        return service.getThisWeekGrouped(userId, ZoneId.of("Asia/Seoul"));
     }
 }
