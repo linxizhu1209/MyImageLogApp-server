@@ -1,4 +1,4 @@
-package com.imglog.myimagelogserver.upload;
+package com.imglog.myimagelogserver.image.dto;
 
 import java.util.List;
 
