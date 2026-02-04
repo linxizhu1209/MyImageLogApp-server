@@ -1,8 +1,6 @@
-package com.imglog.myimagelogserver.upload.service;
-
+package com.imglog.myimagelogserver.image.storage;
 
 import com.imglog.myimagelogserver.image.service.StoredFile;
-import com.imglog.myimagelogserver.image.storage.LocalStorage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
@@ -35,11 +33,6 @@ class LocalStorageTest {
         // when
         StoredFile stored = storage.store(file);
 
-        System.out.println("tempDir = " + tempDir.toAbsolutePath());
-        System.out.println("objectKey = " + stored.objectKey());
-        System.out.println("saved = " + tempDir.resolve(stored.objectKey()).toAbsolutePath());
-
-
         // then (metadata)
         assertThat(stored.storageType()).isEqualTo("Local");
         assertThat(stored.bucker()).isNull();
@@ -51,7 +44,6 @@ class LocalStorageTest {
 
         // then (file saved)
         Path saved = tempDir.resolve(stored.objectKey()).normalize();
-
 
         assertThat(Files.exists(saved))
                 .as("saved file should exist: " + saved)
