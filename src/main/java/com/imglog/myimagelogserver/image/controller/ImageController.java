@@ -4,6 +4,7 @@ import com.imglog.myimagelogserver.image.domain.ImageItem;
 import com.imglog.myimagelogserver.image.dto.*;
 import com.imglog.myimagelogserver.image.service.ImageService;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.ZoneId;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/images")
 public class ImageController {
@@ -24,13 +26,15 @@ public class ImageController {
     /**
      * multipart 업로드 + DB 저장
      */
-
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UploadResult upload(
             @RequestParam @NotNull Long userId,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String content,
             @RequestPart("files") List<MultipartFile> files
     ) {
-        List<ImageItem> saved = service.upload(userId, files);
+        log.info("upload called userId={}");
+        List<ImageItem> saved = service.upload(userId, title, content, files);
 
         List<UploadItem> items = saved.stream()
                 .map(i -> new UploadItem(i.getId(), i.getUrl(), i.getOriginalName(), i.getSize()))

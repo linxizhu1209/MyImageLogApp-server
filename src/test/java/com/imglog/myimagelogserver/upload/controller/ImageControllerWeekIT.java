@@ -45,7 +45,9 @@ public class ImageControllerWeekIT {
                 "http://localhost:8080/files/test.jpg",
                 "key_test.jpg",
                 "test.jpg",
-                1234
+                1234,
+                "title",
+                "content"
         );
 
         try {

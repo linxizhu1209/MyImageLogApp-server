@@ -2,13 +2,15 @@ package com.imglog.myimagelogserver.image.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "images")
-public class ImageItem {
+public class ImageItem extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,8 +38,11 @@ public class ImageItem {
     @Column(nullable = false)
     private long size;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    @Column(length = 200)
+    private String title;
+
+    @Column(length = 2000)
+    private String content;
 
     protected ImageItem() {}
 
@@ -46,7 +51,9 @@ public class ImageItem {
             String url,
             String objectKey,
             String originalName,
-            long size
+            long size,
+            String title,
+            String content
     ) {
         ImageItem i = new ImageItem();
         i.userId = userId;
@@ -55,10 +62,15 @@ public class ImageItem {
         i.objectKey = objectKey;
         i.originalName = originalName;
         i.size = size;
-        i.createdAt = LocalDateTime.now();
+        i.title = title;
+        i.content = content;
         return i;
     }
 
+    public void updateTitleAndContent(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
     public enum StorageType {
         LOCAL, S3
     }

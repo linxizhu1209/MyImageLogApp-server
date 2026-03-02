@@ -2,6 +2,7 @@ package com.imglog.myimagelogserver.image.service;
 
 import com.imglog.myimagelogserver.image.domain.ImageItem;
 import com.imglog.myimagelogserver.image.dto.DayImages;
+import com.imglog.myimagelogserver.image.dto.PostDetailResponse;
 import com.imglog.myimagelogserver.image.dto.WeekImagesResponse;
 import com.imglog.myimagelogserver.image.repository.ImageItemRepository;
 import com.imglog.myimagelogserver.image.storage.StoragePort;
@@ -36,7 +37,7 @@ public class ImageService {
      * 파일 저장 + DB 메타데이터 저장
      */
     @Transactional
-    public List<ImageItem> upload(Long userId, List<MultipartFile> files) {
+    public List<ImageItem> upload(Long userId, String title, String content, List<MultipartFile> files) {
         if (userId == null) {
             throw new IllegalArgumentException("userId is required");
         }
@@ -54,7 +55,9 @@ public class ImageService {
                             stored.url(),
                             stored.objectKey(),
                             stored.originalName(),
-                            stored.size()
+                            stored.size(),
+                            title,
+                            content
                     );
                     return repo.save(entity);
                 } catch (IOException e) {
@@ -107,6 +110,34 @@ public class ImageService {
             days.add(new DayImages(d.getDayOfWeek(), d, summaries));
         }
         return new WeekImagesResponse(weekStart, weekend, days);
+    }
+
+    /**
+     * 이미지 Id로 글(제목/내용) 조회
+     */
+    @Transactional(readOnly = true)
+    public PostDetailResponse getPostDetail(Long imageId) {
+        ImageItem item = repo.findById(imageId).orElseThrow(() -> new IllegalArgumentException("Image not found: " + imageId));
+
+        return new PostDetailResponse(
+                item.getId(),
+                item.getTitle(),
+                item.getContent(),
+                item.getUrl(),
+                item.getCreatedAt(),
+                item.getUpdatedAt()
+        );
+    }
+
+    /**
+     * 이미지 id로 글(제목/내용) 수정
+     */
+    @Transactional
+    public void updatePost(Long imageId, String title, String content) {
+        ImageItem item = repo.findById(imageId).orElseThrow(() -> new IllegalArgumentException("Image not found: "+ imageId));
+
+        item.updateTitleAndContent(title, content);
+        repo.save(item);
     }
 }
 

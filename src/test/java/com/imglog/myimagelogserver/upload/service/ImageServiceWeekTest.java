@@ -71,7 +71,7 @@ class ImageServiceWeekTest {
      * 날짜 고정을 위해 reflection으로 접근 세팅
      */
     private ImageItem newLocalImage(Long id, String name, LocalDateTime createdAt) throws Exception {
-        ImageItem item = ImageItem.ofLocal(1L, "http://localhost/files/" + name, "key_" + name, name, 100);
+        ImageItem item = ImageItem.ofLocal(1L, "http://localhost/files/" + name, "key_" + name, name, 100,"title", "content");
 
         setField(item, "id", id);
         setField(item, "createdAt", createdAt);
