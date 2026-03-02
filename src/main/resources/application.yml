@@ -30,3 +30,10 @@ app:
   upload:
     base-dir: uploads
     public-url-base: http://localhost:8080/files
+  n8n:
+    webhook-url: http://localhost:5678/webhook/fetch-news
+
+logging:
+  level:
+    root: INFO
+    com.imglog.myimagelogserver: DEBUG
