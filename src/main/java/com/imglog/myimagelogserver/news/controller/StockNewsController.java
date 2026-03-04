@@ -21,14 +21,15 @@ public class StockNewsController {
     private final StockNewsService service;
 
     /**
-     * n8n에서 호출: 오늘의 뉴스 일괄 저장
+     * n8n에서 호출: 오늘의 뉴스 일괄 저장 + AI 요약 저장
      */
     @PostMapping("/today")
     public ResponseEntity<Map<String, Object>> saveTodayNews(@RequestBody SaveNewsBatchRequest request) {
-        int count = service.saveToday(request.news());
+        int count = service.saveToday(request.news(), request.aiSummary());
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "savedCount", count
+                "savedCount", count,
+                "hasAiSummary", request.aiSummary() != null
         ));
     }
 

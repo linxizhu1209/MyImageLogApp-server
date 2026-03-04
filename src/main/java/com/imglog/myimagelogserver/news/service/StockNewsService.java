@@ -1,6 +1,8 @@
 package com.imglog.myimagelogserver.news.service;
 
+import com.imglog.myimagelogserver.news.domain.DailyNewsSummary;
 import com.imglog.myimagelogserver.news.domain.StockNews;
+import com.imglog.myimagelogserver.news.repository.DailyNewsSummaryRepository;
 import com.imglog.myimagelogserver.news.repository.StockNewsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import static com.imglog.myimagelogserver.news.repository.StockNewsDtos.*;
 public class StockNewsService {
 
     private final StockNewsRepository repository;
+    private final DailyNewsSummaryRepository summaryRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${app.n8n.webhook-url}")
@@ -33,7 +36,7 @@ public class StockNewsService {
      * 오늘 날짜의 뉴스를 일괄 저장 (기존 데이터 삭제 후 저장)
      */
     @Transactional
-    public int saveToday(List<SaveNewsRequest> newsRequests) {
+    public int saveToday(List<SaveNewsRequest> newsRequests, String aiSummary) {
         LocalDate today = LocalDate.now();
 
         // 기존의 오늘 뉴스 삭제 (중복 방지)
@@ -49,8 +52,16 @@ public class StockNewsService {
                         today
                 ))
                 .toList();
-
         repository.saveAll(entities);
+
+        // AI 요약 저장/업데이트
+        if (aiSummary != null && !aiSummary.isBlank()) {
+            summaryRepository.findBySummaryDate(today).ifPresentOrElse(
+                    existing -> existing.updateSummary(aiSummary),
+                    () -> summaryRepository.save(DailyNewsSummary.of(today, aiSummary))
+            );
+        }
+
         return entities.size();
     }
 
@@ -61,6 +72,10 @@ public class StockNewsService {
         LocalDate today = LocalDate.now();
         List<StockNews> newsList = repository.findByNewsDateOrderByCreatedAtDesc(today);
 
+        String aiSummary = summaryRepository.findBySummaryDate(today)
+                .map(DailyNewsSummary::getAiSummary)
+                .orElse(null);
+
         List<NewsResponse> responses = newsList.stream()
                 .map(n -> new NewsResponse(
                         n.getId(),
@@ -70,7 +85,7 @@ public class StockNewsService {
                         n.getSource()
                 )).toList();
 
-        return new TodayNewsResponse(today.toString(), responses);
+        return new TodayNewsResponse(today.toString(), aiSummary, responses);
     }
 
     /**
@@ -87,7 +102,7 @@ public class StockNewsService {
             try {
                 restTemplate.getForObject(n8nWebhookUrl, String.class);
                 // n8n 완료시까지 잠시 대기
-                Thread.sleep(3000);
+                Thread.sleep(20000);
 
                 // 3. 다시 조회
                 existingNews = repository.findByNewsDateOrderByCreatedAtDesc(today);
@@ -100,6 +115,10 @@ public class StockNewsService {
         }
 
         // 4. 응답 생성
+        String aiSummary = summaryRepository.findBySummaryDate(today)
+                .map(DailyNewsSummary::getAiSummary)
+                .orElse(null);
+
         List<NewsResponse> responses = existingNews.stream()
                 .map(n -> new NewsResponse(
                         n.getId(),
@@ -110,6 +129,6 @@ public class StockNewsService {
                 ))
                 .toList();
 
-        return new TodayNewsResponse(today.toString(), responses);
+        return new TodayNewsResponse(today.toString(), aiSummary, responses);
     }
 }

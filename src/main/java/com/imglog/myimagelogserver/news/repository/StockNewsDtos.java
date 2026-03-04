@@ -18,10 +18,11 @@ public class StockNewsDtos {
     ) {}
 
     /**
-     * n8n에서 여러 뉴스를 한 번에 저장할 때 사용
+     * n8n에서 뉴스 + AI 요약 함께 저장
      */
     public record SaveNewsBatchRequest(
-            List<SaveNewsRequest> news
+            List<SaveNewsRequest> news,
+            String aiSummary // AI 요약추가
     ) {}
 
     /**
@@ -40,6 +41,7 @@ public class StockNewsDtos {
      */
     public record TodayNewsResponse(
             String date,
+            String aiSummary,
             List<NewsResponse> news
     ) {}
 }
