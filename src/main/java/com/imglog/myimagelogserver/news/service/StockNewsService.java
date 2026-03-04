@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.imglog.myimagelogserver.news.repository.StockNewsDtos.*;
 
@@ -27,7 +28,7 @@ public class StockNewsService {
 
     private final StockNewsRepository repository;
     private final DailyNewsSummaryRepository summaryRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     @Value("${app.n8n.webhook-url}")
     private String n8nWebhookUrl;
@@ -99,20 +100,17 @@ public class StockNewsService {
 
         if (existingNews.isEmpty()) {
             // 2. 없으면 n8n 워크플로 호출
-            try {
-                restTemplate.getForObject(n8nWebhookUrl, String.class);
-                // n8n 완료시까지 잠시 대기
-                Thread.sleep(20000);
-
-                // 3. 다시 조회
-                existingNews = repository.findByNewsDateOrderByCreatedAtDesc(today);
-                log.info("n8n 완료, {}개 뉴스 로드됨", existingNews.size());
-            } catch (Exception e) {
-                log.warn("n8n 호출 실패: {}", e.getMessage());
-            }
-        } else {
-            log.info("DB에서 기존 뉴스 {}개 반환", existingNews.size());
+            CompletableFuture.runAsync(() -> {
+                try {
+                    restTemplate.getForObject(n8nWebhookUrl, String.class);
+                    log.info("n8n 워크플로 실행 완료");
+                } catch (Exception e) {
+                    log.warn("n8n 호출 실패: {}", e.getMessage());
+                }
+            });
+            return new TodayNewsResponse(today.toString(), null, List.of());
         }
+        log.info("DB에서 기존 뉴스 {}개 반환", existingNews.size());
 
         // 4. 응답 생성
         String aiSummary = summaryRepository.findBySummaryDate(today)
