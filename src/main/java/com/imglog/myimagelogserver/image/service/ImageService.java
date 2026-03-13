@@ -103,7 +103,9 @@ public class ImageService {
                             x.getUrl(),
                             x.getOriginalName(),
                             x.getSize(),
-                            x.getCreatedAt().toString()
+                            x.getCreatedAt().toString(),
+                            x.getTitle(),
+                            x.getContent()
                     ))
                     .toList();
 

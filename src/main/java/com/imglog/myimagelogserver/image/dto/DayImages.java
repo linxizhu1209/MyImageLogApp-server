@@ -14,6 +14,8 @@ public record DayImages(
             String url,
             String originalName,
             long size,
-            String createdAt
+            String createdAt,
+            String title,
+            String content
     ) {}
 }
