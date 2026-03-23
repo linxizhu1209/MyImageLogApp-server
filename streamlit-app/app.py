@@ -32,17 +32,24 @@ def build_week_text(data: dict) -> str:
             lines.append(f"[{date_str} {day_name}]\n제목: {title}\n내용: {content}")
     return "\n\n---\n\n".join(lines) if lines else ""
 
-def analyze_with_ollama(prompt: str) -> str:
-    """Ollama 로컬 LLM으로 분석"""
+# ======== LLM 공통 호출 (모델 변경 시 여기만 수정) ========
+LLM_MODEL = "llama3.2"
+
+def call_llm(prompt: str, model: str = LLM_MODEL) -> str:
+    """LLM 호출 (Ollama). 이후 OpenAI 등으로 교체 시 이 함수만 수정."""
     try:
         import ollama
         r = ollama.chat(
-            model="llama3.2",
+            model=model,
             messages=[{"role": "user", "content": prompt}]
         )
         return r["message"]["content"]
     except Exception as e:
-        return f"분석 실패 : {e}\n\n(ollama가 실행중인지, llama3.2 모델이 있는지 확인하세요. 명령어 -> ollama pull llama3.2)"
+        return f"분석 실패: {e}\n\n(Ollama 실행 여부, 모델 설치 확인: ollama pull {model})"
+
+def analyze_with_ollama(prompt: str) -> str:
+    """하위 호환용. call_llm 사용 권장."""
+    return call_llm(prompt)
 
 
 def main():
@@ -99,7 +106,29 @@ def main():
         count = len(day.get("images", []))
         st.write(f"- {date_str} ({day_name}): {count}건")
 
-    # ============= LLM 요약/감정 분석 ==============
+    # ============= 감정/기분 트렌드 ==============
+    st.subheader("📈 감정/기분 트렌드")
+    st.caption("이번 주 기록을 바탕으로 긍정·중립·부정 비율과 한 줄 트렌드 해석을 합니다.")
+    emotion_prompt = f"""다음은 한 사용자의 이번 주(월~일) 이미지 로그 제목과 내용입니다.
+이 내용만 보고 감정/기분을 분석해 주세요.
+
+**반드시 아래 형식으로만 답하세요 (한국어):**
+
+1) **비율**: 이번 주 전체 감정을 긍정 / 중립 / 부정 비율로 추정해 주세요. (예: 긍정 50%, 중립 30%, 부정 20%)
+
+2) **한 줄 트렌드**: 이번 주 기분이 주 중에 어떻게 흐른지 한 문장으로 요약해 주세요. (예: "주 초반에 다소 지쳤다가 주 말에 안정적인 편이었다.")
+
+---
+{week_text}
+---"""
+
+    if st.button("📈 감정 트렌드 분석", key="btn_emotion"):
+        with st.spinner("감정 트렌드 분석 중..."):
+            emotion_result = call_llm(emotion_prompt)
+        st.success("감정 트렌드 분석 결과")
+        st.markdown(emotion_result)
+
+    # ============= LLM 요약 & 감정 분석 ==============
     st.subheader("🤖 LLM 요약 & 감정 분석")
 
     prompt = f"""다음은 한 사용자의 이번주(월요일 ~ 일요일) 이미지 로그의 제목과 내용입니다. 
@@ -115,7 +144,7 @@ def main():
 
     if st.button("🔍 분석하기"):
         with st.spinner("LLM 분석 중..."):
-            result = analyze_with_ollama(prompt)
+            result = call_llm(prompt)
         st.write(result)
 
     # 원본 데이터 접기
