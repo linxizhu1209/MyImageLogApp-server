@@ -1,9 +1,11 @@
 import streamlit as st
 import requests
-from datetime import datetime
+import base64
 
 # ======== 설정 ============
-API_BASE = "http://localhost:8080" # spring boot 서버 주소
+API_BASE = "http://localhost:8080"  # spring boot 서버 주소
+LLM_VISION_MODEL = "llava"  # 이미지 분석용 - 메모리 적음 (ollama pull llava)
+MAX_IMAGES_FOR_ANALYSIS = 5  # 메모리 절약: 최대 5장 (늘리면 OOM 위험) -- 메모리 오류 방지 위함
 
 def get_user_id_from_query():
     """URL 쿼리 파라미터에서 userID 추출"""
@@ -31,6 +33,49 @@ def build_week_text(data: dict) -> str:
             content = img.get("content") or ""
             lines.append(f"[{date_str} {day_name}]\n제목: {title}\n내용: {content}")
     return "\n\n---\n\n".join(lines) if lines else ""
+
+
+def collect_week_image_urls(data: dict, max_count: int = MAX_IMAGES_FOR_ANALYSIS) -> list[str]:
+    """이번 주 이미지 URL 목록 수집 (날짜순, max_count까지)"""
+    urls = []
+    for day in sorted(data.get("days", []), key=lambda d: d.get("date", "")):
+        for img in day.get("images", []):
+            url = img.get("url")
+            if url:
+                urls.append(url)
+            if len(urls) >= max_count:
+                return urls
+    return urls
+
+
+def download_image_as_base64(url: str) -> str | None:
+    """이미지 URL을 다운로드하여 base64 문자열로 반환"""
+    try:
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
+        return base64.b64encode(r.content).decode("utf-8")
+    except Exception:
+        return None
+
+
+def call_llm_vision(prompt: str, images_base64: list[str], model: str = LLM_VISION_MODEL) -> str:
+    """이미지를 포함한 비전 LLM 호출 (Ollama). 이번 주 이미지 집계용."""
+    if not images_base64:
+        return "분석할 이미지가 없습니다."
+    try:
+        import ollama
+        r = ollama.chat(
+            model=model,
+            messages=[{
+                "role": "user",
+                "content": prompt,
+                "images": images_base64,
+            }]
+        )
+        return r["message"]["content"]
+    except Exception as e:
+        return f"이미지 분석 실패: {e}\n\n(비전 모델 설치: ollama pull {model})"
+
 
 # ======== LLM 공통 호출 (모델 변경 시 여기만 수정) ========
 LLM_MODEL = "llama3.2"
@@ -127,6 +172,37 @@ def main():
             emotion_result = call_llm(emotion_prompt)
         st.success("감정 트렌드 분석 결과")
         st.markdown(emotion_result)
+
+    # ============= 이미지 기반 이번 주 분위기 (집계) ==============
+    st.subheader("📷 이미지 기반 이번 주 분위기")
+    st.caption("이번 주 업로드된 사진(표정·분위기)을 보고 전체 집계 분석을 합니다. (비전 모델: llava, 메모리 절약용)")
+
+    image_urls = collect_week_image_urls(data)
+    if image_urls:
+        st.write(f"분석 대상: {len(image_urls)}장 (최대 {MAX_IMAGES_FOR_ANALYSIS}장)")
+        if st.button("📷 이미지 분위기 집계 분석", key="btn_image"):
+            with st.spinner("이미지 다운로드 및 분석 중... (비전 모델이라 다소 걸립니다)"):
+                images_b64 = []
+                for url in image_urls:
+                    b64 = download_image_as_base64(url)
+                    if b64:
+                        images_b64.append(b64)
+                if not images_b64:
+                    st.error("이미지를 불러올 수 없습니다. Spring 서버가 실행 중인지, 이미지 URL이 접근 가능한지 확인하세요.")
+                else:
+                    vision_prompt = """아래 이미지들은 한 사용자가 이번 주(월~일)에 찍은 사진들입니다.
+이미지들 전체를 보고 **이번 주 집계** 형태로 분석해 주세요.
+
+**반드시 아래 형식으로만 답하세요 (한국어):**
+
+1) **표정/분위기 비율**: 전체 사진을 보고 추정한 비율을 작성해 주세요. (예: 밝은 표정/미소 40%, 무표정/중립 35%, 피곤/어두운 분위기 25%)
+
+2) **이번 주 분위기 트렌드 한 줄**: 이번 주 사진들이 전체적으로 어떤 느낌인지 한 문장으로 요약해 주세요."""
+                    result = call_llm_vision(vision_prompt, images_b64)
+                    st.success("이미지 기반 분위기 집계 결과")
+                    st.markdown(result)
+    else:
+        st.info("이번 주 업로드된 이미지가 없어 분석할 수 없습니다.")
 
     # ============= LLM 요약 & 감정 분석 ==============
     st.subheader("🤖 LLM 요약 & 감정 분석")
