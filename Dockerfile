@@ -12,6 +12,8 @@ RUN chmod +x /workspace/gradlew && /workspace/gradlew --no-daemon dependencies |
 
 # 실제 소스 복사 후 빌드
 COPY . /workspace
+# Windows에서 checkout된 gradlew는 CRLF/권한 문제로 실행 실패할 수 있어 보정
+RUN sed -i 's/\r$//' /workspace/gradlew && chmod +x /workspace/gradlew
 RUN /workspace/gradlew --no-daemon clean bootJar
 
 FROM eclipse-temurin:17-jre
