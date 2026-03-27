@@ -6,6 +6,7 @@ import base64
 import os
 
 API_BASE = os.getenv("API_BASE", "http://localhost:8080")  # spring boot 서버 주소
+LLM_VISION_MODEL = os.getenv("LLM_VISION_MODEL", "llava")  # 이미지 집계 분석용(ollama)
 MAX_IMAGES_FOR_ANALYSIS = 5  # 메모리 절약: 최대 5장 (늘리면 OOM 위험) -- 메모리 오류 방지 위함
 
 def get_token_from_query() -> str | None:
