@@ -41,12 +41,13 @@ def get_user_id_from_query():
     params = st.query_params
     return params.get("userId")
 
-def fetch_week_data(user_id: int) -> dict:
+def fetch_week_data(user_id: int, token: str) -> dict:
     """서버(spring) API에서 이번 주 이미지/기록 조회 """
     r = requests.get(
         f"{API_BASE}/api/images/week",
         params={"userId": user_id},
-        timeout=10
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=10,
     )
     r.raise_for_status()
     return r.json()
@@ -150,12 +151,17 @@ def main():
         st.error("토큰의 사용자와 요청한 userId가 일치하지 않습니다.")
         st.stop()
 
+    token = get_token_from_query()
+    if not token:
+        st.error("로그인이 필요합니다. 앱에서 로그인 후 Streamlit을 열어주세요. (URL에 token 필요)")
+        st.stop()
+
     # 이번 주 데이터 조회
     try:
         with st.spinner("이번 주 데이터 불러오는 중..."):
-            data = fetch_week_data(user_id)
+            data = fetch_week_data(user_id, token)
     except requests.RequestException as e:
-        st.error(f"서버 연결 실패: {e}\n\nSpring Boot 서버가 실행중인지 확인해주세요.")
+        st.error(f"서버 연결 실패: {e}\n\n(토큰 누락/만료 또는 서버 오류일 수 있어요)")
         return
 
     week_start = data.get("weekStart", "")
