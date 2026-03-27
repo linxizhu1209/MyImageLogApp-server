@@ -17,8 +17,12 @@ class GeminiClient:
         self.model = (model if model is not None else os.getenv("GEMINI_MODEL", "")).strip()
         if not self.api_key:
             raise RuntimeError("GEMINI_API_KEY is not set")
+        self._cached_models: list[str] | None = None
 
     def _list_models(self) -> list[str]:
+        if self._cached_models is not None:
+            return self._cached_models
+
         url = f"https://generativelanguage.googleapis.com/v1beta/models?key={self.api_key}"
         req = urllib.request.Request(url, method="GET")
         with urllib.request.urlopen(req, timeout=30) as resp:
@@ -33,7 +37,8 @@ class GeminiClient:
             methods = m.get("supportedGenerationMethods") or []
             if base and any(x == "generateContent" for x in methods):
                 out.append(base)
-        return sorted(set(out))
+        self._cached_models = sorted(set(out))
+        return self._cached_models
 
     def _pick_default_model(self, models: list[str]) -> str:
         # 비용/속도 우선: flash-lite/flash 계열 선호. (계정에 없는 건 자동으로 제외됨)
@@ -64,11 +69,6 @@ class GeminiClient:
         return self._pick_default_model(models)
 
     def _generate(self, contents: list[dict], max_output_tokens: int) -> str:
-        model = self._resolve_model()
-        url = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/"
-            f"{model}:generateContent?key={self.api_key}"
-        )
         payload = {
             "contents": contents,
             "generationConfig": {
@@ -76,20 +76,63 @@ class GeminiClient:
                 "temperature": 0.4,
             },
         }
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
+        # 1) env로 지정된 모델이 있으면 그걸 먼저 시도
+        # 2) 실패(특히 404/403)하면 models.list 기반으로 다음 후보들을 자동으로 재시도
+        tried: list[str] = []
+        candidates: list[str] = []
+        if self.model:
+            candidates.append(self.model)
+
         try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-        except urllib.error.HTTPError as e:
-            body = e.read().decode("utf-8", errors="replace")
-            raise RuntimeError(f"Gemini HTTPError {e.code} (model={model}): {body}") from e
-        except Exception as e:
-            raise RuntimeError(f"Gemini request failed (model={model}): {e}") from e
+            models = self._list_models()
+        except Exception:
+            models = []
+
+        # preferred 우선순위대로 붙이되, 목록에 없더라도 일단 시도해볼 수 있게 구성
+        preferred = [
+            "gemini-2.5-flash-lite",
+            "gemini-2.5-flash",
+            "gemini-3.1-flash-lite-preview",
+            "gemini-3-flash-preview",
+            "gemini-2.0-flash-lite",
+            "gemini-2.0-flash",
+        ]
+        for p in preferred:
+            if p not in candidates:
+                candidates.append(p)
+        for m in models:
+            if m not in candidates:
+                candidates.append(m)
+
+        last_error: Exception | None = None
+        for model in candidates:
+            tried.append(model)
+            url = (
+                f"https://generativelanguage.googleapis.com/v1beta/models/"
+                f"{model}:generateContent?key={self.api_key}"
+            )
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=60) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                last_error = None
+                break
+            except urllib.error.HTTPError as e:
+                body = e.read().decode("utf-8", errors="replace")
+                # 모델 미지원/권한 문제(404/403 등)는 다음 모델로 계속 시도
+                last_error = RuntimeError(f"Gemini HTTPError {e.code} (model={model}): {body}")
+                continue
+            except Exception as e:
+                last_error = RuntimeError(f"Gemini request failed (model={model}): {e}")
+                continue
+
+        if last_error is not None:
+            raise last_error
 
         candidates = data.get("candidates") or []
         if not candidates:

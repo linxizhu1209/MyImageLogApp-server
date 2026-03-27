@@ -199,7 +199,7 @@ def main():
 
     # ============= 이미지 기반 이번 주 분위기 (집계) ==============
     st.subheader("📷 이미지 기반 이번 주 분위기")
-    st.caption("이번 주 업로드된 사진(표정·분위기)을 보고 전체 집계 분석을 합니다. (비전 모델: llava, 메모리 절약용)")
+    st.caption("이번 주 업로드된 사진(표정·분위기)을 보고 전체 집계 분석을 합니다. (Gemini 비전)")
 
     image_urls = collect_week_image_urls(data)
     if image_urls:
