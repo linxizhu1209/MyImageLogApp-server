@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/myimagelog}
+    username: ${SPRING_DATASOURCE_USERNAME:myimagelog}
+    password: ${SPRING_DATASOURCE_PASSWORD:myimagelog}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+
+  h2:
+    console:
+      enabled: false
+
+logging:
+  level:
+    root: INFO

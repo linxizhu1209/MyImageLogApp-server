@@ -3,9 +3,37 @@ import requests
 import base64
 
 # ======== 설정 ============
-API_BASE = "http://localhost:8080"  # spring boot 서버 주소
-LLM_VISION_MODEL = "llava"  # 이미지 분석용 - 메모리 적음 (ollama pull llava)
+import os
+
+API_BASE = os.getenv("API_BASE", "http://localhost:8080")  # spring boot 서버 주소
 MAX_IMAGES_FOR_ANALYSIS = 5  # 메모리 절약: 최대 5장 (늘리면 OOM 위험) -- 메모리 오류 방지 위함
+
+def get_token_from_query() -> str | None:
+    params = st.query_params
+    return params.get("token")
+
+def verify_jwt_and_get_user_id() -> int | None:
+    """
+    Streamlit 공개 페이지 접근 시 JWT를 Spring에 검증 요청.
+    성공 시 userId 반환, 실패 시 None.
+    """
+    token = get_token_from_query()
+    if not token:
+        return None
+    try:
+        r = requests.get(
+            f"{API_BASE}/api/me",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            return None
+        data = r.json()
+        if data.get("authenticated") is True and data.get("userId"):
+            return int(data["userId"])
+        return None
+    except Exception:
+        return None
 
 def get_user_id_from_query():
     """URL 쿼리 파라미터에서 userID 추출"""
@@ -81,16 +109,15 @@ def call_llm_vision(prompt: str, images_base64: list[str], model: str = LLM_VISI
 LLM_MODEL = "llama3.2"
 
 def call_llm(prompt: str, model: str = LLM_MODEL) -> str:
-    """LLM 호출 (Ollama). 이후 OpenAI 등으로 교체 시 이 함수만 수정."""
+    """LLM 호출.
+    - 1순위: Gemini REST API (환경변수 GEMINI_API_KEY가 있으면)
+    """
     try:
-        import ollama
-        r = ollama.chat(
-            model=model,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return r["message"]["content"]
+        from llm_gemini import GeminiClient
+        client = GeminiClient()
+        return client.generate_text(prompt, max_output_tokens=700)
     except Exception as e:
-        return f"분석 실패: {e}\n\n(Ollama 실행 여부, 모델 설치 확인: ollama pull {model})"
+            return f"분석 실패: {e}"
 
 def analyze_with_ollama(prompt: str) -> str:
     """하위 호환용. call_llm 사용 권장."""
@@ -100,6 +127,11 @@ def analyze_with_ollama(prompt: str) -> str:
 def main():
     st.set_page_config(page_title="이번 주 요약", layout="wide")
     st.title("📅 이번 주 요약")
+
+    user_id_from_token = verify_jwt_and_get_user_id()
+    if user_id_from_token is None:
+        st.error("로그인이 필요합니다. 앱에서 로그인 후 Streamlit을 열어주세요. (URL에 token 필요)")
+        st.stop()
 
     # userId 쿼리 파라미터 확인
     user_id_raw = get_user_id_from_query()
@@ -112,6 +144,10 @@ def main():
     except ValueError:
         st.error("userId의 형식이 잘못되었습니다!")
         return
+
+    if user_id != user_id_from_token:
+        st.error("토큰의 사용자와 요청한 userId가 일치하지 않습니다.")
+        st.stop()
 
     # 이번 주 데이터 조회
     try:

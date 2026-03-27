@@ -13,7 +13,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static com.imglog.myimagelogserver.news.repository.StockNewsDtos.*;
 
@@ -99,15 +98,7 @@ public class StockNewsService {
         List<StockNews> existingNews = repository.findByNewsDateOrderByCreatedAtDesc(today);
 
         if (existingNews.isEmpty()) {
-            // 2. 없으면 n8n 워크플로 호출
-            CompletableFuture.runAsync(() -> {
-                try {
-                    restTemplate.getForObject(n8nWebhookUrl, String.class);
-                    log.info("n8n 워크플로 실행 완료");
-                } catch (Exception e) {
-                    log.warn("n8n 호출 실패: {}", e.getMessage());
-                }
-            });
+            // 배포/운영 기본: n8n 스케줄(08:00)로 채워짐. 여기서는 더 이상 자동 실행하지 않음.
             return new TodayNewsResponse(today.toString(), null, List.of());
         }
         log.info("DB에서 기존 뉴스 {}개 반환", existingNews.size());

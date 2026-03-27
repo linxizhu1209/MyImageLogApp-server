@@ -40,11 +40,11 @@ public class StockNewsController {
     public ResponseEntity<TodayNewsResponse> getTodayNews(
             @RequestParam(defaultValue = "true") boolean autoFetch
             ) {
-        if (autoFetch) {
-            return ResponseEntity.ok(service.getTodayNewsWithFetch());
-        } else {
-            return ResponseEntity.ok(service.getTodayNews());
-        }
+        // 배포/운영에서는 n8n이 스케줄로 채우는 구조가 기본.
+        // autoFetch=true는 개발 편의용으로만 남겨두고, Kotlin 앱에서는 false로 호출 권장.
+        return autoFetch
+                ? ResponseEntity.ok(service.getTodayNewsWithFetch())
+                : ResponseEntity.ok(service.getTodayNews());
     }
 
 }

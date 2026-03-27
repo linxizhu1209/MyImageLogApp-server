@@ -1,0 +1,83 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: myimagelog
+      POSTGRES_USER: myimagelog
+      POSTGRES_PASSWORD: myimagelog
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myimagelog -d myimagelog"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  spring:
+    build:
+      context: .
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/myimagelog
+      SPRING_DATASOURCE_USERNAME: myimagelog
+      SPRING_DATASOURCE_PASSWORD: myimagelog
+
+      # OAuth secrets (배포 시 환경변수로 주입)
+      # Spring Boot는 client-id가 "빈 문자열"이면 부팅 단계에서 실패함.
+      # 로컬 compose 테스트에서는 더미 값을 사용하고, 실제 배포 시에는 .env/환경변수로 교체.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-dummy-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-dummy-google-client-secret}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID:-dummy-kakao-client-id}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET:-dummy-kakao-client-secret}
+
+      # JWT
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-myimagelogserver-jwt-secret-key-min-32chars-long}
+
+      # base url (외부 엔드포인트)
+      SERVER_URL: ${SERVER_URL:-http://localhost:8080}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads_data:/app/uploads
+
+  streamlit:
+    build:
+      context: ./streamlit-app
+    environment:
+      # Streamlit -> Spring (compose 내부 통신)
+      API_BASE: http://spring:8080
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+    depends_on:
+      - spring
+    ports:
+      - "8501:8501"
+
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - TZ=Asia/Seoul
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_PERSONALIZATION_ENABLED=false
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-please-change-this}
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://localhost:5678/}
+      - N8N_SECURE_COOKIE=false
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  postgres_data:
+  n8n_data:
+  uploads_data:
+
