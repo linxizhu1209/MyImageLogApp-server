@@ -39,7 +39,7 @@ spring:
             client-secret: ${KAKAO_CLIENT_SECRET:}
             scope: profile_nickname, profile_image
             authorization-grant-type: authorization_code
-            redirect-uri: "https://polite-unjocund-elizabet.ngrok-free.dev/login/oauth2/code/kakao"
+            redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
             client-authentication-method: client_secret_post
             client-name: Kakao
         provider:
@@ -52,11 +52,12 @@ spring:
 app:
   upload:
     base-dir: uploads
-    public-url-base: http://localhost:8080/files
+    # 외부에서 접근 가능한 base URL (배포 시 SERVER_URL=https://api.lovelyju.com)
+    public-url-base: ${SERVER_URL:http://localhost:8080}/files
   n8n:
     webhook-url: http://localhost:5678/webhook/fetch-news
   # OAuth / JWT
-  api-base-url: ${SERVER_URL} # 비우면 http://localhost:{port}. 앱/에뮬레이터용: http://10.0.2.2:8080
+  api-base-url: ${SERVER_URL:} # 비우면 http://localhost:{port}. 앱/에뮬레이터용: http://10.0.2.2:8080
   oauth:
     redirect-uri: myimagelogapp://auth   # Kotlin 앱 딥링크
   jwt:
