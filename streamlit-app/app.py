@@ -6,7 +6,6 @@ import base64
 import os
 
 API_BASE = os.getenv("API_BASE", "http://localhost:8080")  # spring boot 서버 주소
-LLM_VISION_MODEL = os.getenv("LLM_VISION_MODEL", "llava")  # 이미지 집계 분석용(ollama)
 MAX_IMAGES_FOR_ANALYSIS = 5  # 메모리 절약: 최대 5장 (늘리면 OOM 위험) -- 메모리 오류 방지 위함
 
 def get_token_from_query() -> str | None:
@@ -88,43 +87,25 @@ def download_image_as_base64(url: str) -> str | None:
         return None
 
 
-def call_llm_vision(prompt: str, images_base64: list[str], model: str = LLM_VISION_MODEL) -> str:
-    """이미지를 포함한 비전 LLM 호출 (Ollama). 이번 주 이미지 집계용."""
-    if not images_base64:
-        return "분석할 이미지가 없습니다."
+def call_llm_vision(prompt: str, images_base64: list[str]) -> str:
+    """이미지를 포함한 비전 LLM 호출 (Gemini). 이번 주 이미지 집계용."""
     try:
-        import ollama
-        r = ollama.chat(
-            model=model,
-            messages=[{
-                "role": "user",
-                "content": prompt,
-                "images": images_base64,
-            }]
-        )
-        return r["message"]["content"]
+        from llm_gemini import GeminiClient
+        client = GeminiClient()
+        return client.generate_vision(prompt, images_base64, max_output_tokens=700)
     except Exception as e:
-        return f"이미지 분석 실패: {e}\n\n(비전 모델 설치: ollama pull {model})"
+        return f"이미지 분석 실패: {e}"
 
 
-# ======== LLM 공통 호출 (모델 변경 시 여기만 수정) ========
-LLM_MODEL = "llama3.2"
-
-def call_llm(prompt: str, model: str = LLM_MODEL) -> str:
-    """LLM 호출.
-    - 1순위: Gemini REST API (환경변수 GEMINI_API_KEY가 있으면)
-    """
+# ======== LLM 공통 호출 (Gemini 전용) ========
+def call_llm(prompt: str) -> str:
+    """LLM 호출 (Gemini 전용)."""
     try:
         from llm_gemini import GeminiClient
         client = GeminiClient()
         return client.generate_text(prompt, max_output_tokens=700)
     except Exception as e:
-            return f"분석 실패: {e}"
-
-def analyze_with_ollama(prompt: str) -> str:
-    """하위 호환용. call_llm 사용 권장."""
-    return call_llm(prompt)
-
+        return f"분석 실패: {e}"
 
 def main():
     st.set_page_config(page_title="이번 주 요약", layout="wide")

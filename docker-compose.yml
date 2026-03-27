@@ -53,8 +53,8 @@ services:
       # Streamlit -> Spring (compose 내부 통신)
       API_BASE: http://spring:8080
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
-      GEMINI_MODEL_FALLBACK: ${GEMINI_MODEL_FALLBACK:-gemini-1.5-flash-8b}
+      # GEMINI_MODEL을 비워두면 Streamlit이 /v1beta/models로 "사용가능한 모델"을 자동 선택함
+      GEMINI_MODEL: ${GEMINI_MODEL:-}
     depends_on:
       - spring
     ports:
