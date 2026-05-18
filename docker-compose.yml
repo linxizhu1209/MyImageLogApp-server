@@ -20,9 +20,10 @@ services:
       context: .
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/myimagelog
-      SPRING_DATASOURCE_USERNAME: myimagelog
-      SPRING_DATASOURCE_PASSWORD: myimagelog
+      # .env에 빈 문자열이 있어도 기본값 유지 (:- 문법)
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/myimagelog}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-myimagelog}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-myimagelog}
 
       # OAuth secrets (배포 시 환경변수로 주입)
       # Spring Boot는 client-id가 "빈 문자열"이면 부팅 단계에서 실패함.

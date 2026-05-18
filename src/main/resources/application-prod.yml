@@ -1,15 +1,19 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/myimagelog}
-    username: ${SPRING_DATASOURCE_USERNAME:myimagelog}
-    password: ${SPRING_DATASOURCE_PASSWORD:myimagelog}
+    # Compose 기본값. SPRING_DATASOURCE_* 환경변수로 덮어쓸 수 있음.
+    # .env에 SPRING_DATASOURCE_URL= 처럼 빈 값이 있으면 부팅 실패하므로 placeholder 사용 안 함.
+    url: jdbc:postgresql://postgres:5432/myimagelog
+    username: myimagelog
+    password: myimagelog
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
 
   h2:
