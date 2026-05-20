@@ -56,6 +56,7 @@ app:
     public-url-base: ${SERVER_URL:http://localhost:8080}/files
   n8n:
     webhook-url: http://localhost:5678/webhook/fetch-news
+    api-key: ${N8N_API_KEY:changeme}
   # OAuth / JWT
   api-base-url: ${SERVER_URL:} # 비우면 http://localhost:{port}. 앱/에뮬레이터용: http://10.0.2.2:8080
   oauth:

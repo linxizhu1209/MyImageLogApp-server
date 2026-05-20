@@ -32,6 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/files/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/news/today").permitAll()
+                        .requestMatchers("/api/stock-report-subscriptions/active").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
