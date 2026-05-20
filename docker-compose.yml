@@ -1,6 +1,8 @@
 services:
   postgres:
     image: postgres:16
+    # Docker 네트워크 내부 통신용. 외부 5432 노출 시에는 방화벽으로 제한 권장.
+    command: ["postgres", "-c", "ssl=off"]
     environment:
       POSTGRES_DB: myimagelog
       POSTGRES_USER: myimagelog
@@ -21,7 +23,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
       # .env에 빈 문자열이 있어도 기본값 유지 (:- 문법)
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/myimagelog}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/myimagelog?sslmode=disable}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-myimagelog}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-myimagelog}
 
@@ -38,6 +40,9 @@ services:
 
       # base url (외부 엔드포인트)
       SERVER_URL: ${SERVER_URL:-http://localhost:8080}
+
+      # n8n → Spring 구독 목록 API
+      N8N_API_KEY: ${N8N_API_KEY:-changeme}
 
     depends_on:
       postgres:
