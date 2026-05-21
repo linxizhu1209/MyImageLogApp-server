@@ -6,9 +6,10 @@ import com.imglog.myimagelogserver.stockreport.dto.StockReportDtos.SubscriptionR
 import com.imglog.myimagelogserver.stockreport.dto.StockReportDtos.UpsertRequest;
 import com.imglog.myimagelogserver.stockreport.repository.StockReportSubscriptionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.asm.TypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
@@ -90,15 +91,15 @@ public class StockReportSubscriptionService {
     private String toJson(List<String> symbols) {
         try {
             return objectMapper.writeValueAsString(symbols);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException(e);
         }
     }
 
     private List<String> fromJson(String json) {
         try {
-            return objectMapper.readValue(json, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
+            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
+        } catch (JacksonException e) {
             throw new IllegalStateException(e);
         }
     }
