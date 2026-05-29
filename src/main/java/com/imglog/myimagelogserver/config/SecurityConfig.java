@@ -27,7 +27,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(h -> h.frameOptions(f -> f.sameOrigin()))  // H2 console
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/index.html", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/assets/**", "/downloads/**", "/download/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/files/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()

@@ -1,0 +1,202 @@
+:root {
+  --bg: #0f1115;
+  --bg-elev: #161a22;
+  --border: #232a36;
+  --text: #e7ecf3;
+  --muted: #8a93a6;
+  --accent: #4f8cff;
+  --accent-hover: #6aa0ff;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard",
+               "Noto Sans KR", Roboto, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+.hero {
+  text-align: center;
+  padding: 72px 20px 56px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(79, 140, 255, 0.18), transparent 60%),
+    linear-gradient(180deg, #1a2030 0%, var(--bg) 100%);
+}
+
+.logo {
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
+  background: var(--bg-elev);
+  padding: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hero h1 {
+  font-size: 2.4rem;
+  margin: 20px 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  color: var(--muted);
+  margin: 0 0 32px;
+  font-size: 1.05rem;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 10px 28px rgba(79, 140, 255, 0.45);
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.cta:hover {
+  background: var(--accent-hover);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(79, 140, 255, 0.55);
+}
+.cta:active { transform: translateY(0); }
+
+.version {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 14px;
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+section {
+  padding: 56px 0;
+  border-bottom: 1px solid var(--border);
+}
+section:last-of-type { border-bottom: none; }
+
+section h2 {
+  font-size: 1.45rem;
+  margin: 0 0 24px;
+  letter-spacing: -0.01em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.screen-placeholder {
+  aspect-ratio: 9 / 16;
+  background: var(--bg-elev);
+  border: 1px dashed #2f384a;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-weight: 600;
+  text-align: center;
+  padding: 16px;
+}
+.screen-placeholder small {
+  display: block;
+  margin-top: 6px;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: #5e6678;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.feature-list li {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.feature-list strong {
+  display: block;
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+.feature-list p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.guide ol {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px 20px 44px;
+  margin: 0;
+}
+.guide li { margin-bottom: 10px; }
+.guide li:last-child { margin-bottom: 0; }
+.guide small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.qr {
+  text-align: center;
+}
+.qr-desc { color: var(--muted); margin-bottom: 16px; }
+.link {
+  display: inline-block;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  padding: 10px 18px;
+  border-radius: 999px;
+  color: var(--accent);
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.95rem;
+  user-select: all;
+}
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px 20px 48px;
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 480px) {
+  .hero { padding: 56px 16px 40px; }
+  .hero h1 { font-size: 2rem; }
+  .cta { padding: 13px 28px; font-size: 1rem; }
+  section { padding: 44px 0; }
+}
