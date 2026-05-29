@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import static com.imglog.myimagelogserver.news.repository.StockNewsDtos.*;
@@ -25,6 +26,8 @@ import static com.imglog.myimagelogserver.news.repository.StockNewsDtos.*;
 @Transactional(readOnly = true)
 public class StockNewsService {
 
+    private static final ZoneId KOREA = ZoneId.of("Asia/Seoul");
+
     private final StockNewsRepository repository;
     private final DailyNewsSummaryRepository summaryRepository;
     private final RestTemplate restTemplate;
@@ -37,7 +40,7 @@ public class StockNewsService {
      */
     @Transactional
     public int saveToday(List<SaveNewsRequest> newsRequests, String aiSummary) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(KOREA);
 
         // 기존의 오늘 뉴스 삭제 (중복 방지)
         repository.deleteByNewsDate(today);
@@ -69,7 +72,7 @@ public class StockNewsService {
      * 오늘의 뉴스 조회
      */
     public TodayNewsResponse getTodayNews() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(KOREA);
         List<StockNews> newsList = repository.findByNewsDateOrderByCreatedAtDesc(today);
 
         String aiSummary = summaryRepository.findBySummaryDate(today)
@@ -92,7 +95,7 @@ public class StockNewsService {
      * 오늘의 뉴스 조회 (없으면 n8n 워크플로 실행 후 반환)
      */
     public TodayNewsResponse getTodayNewsWithFetch() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(KOREA);
 
         // 1. DB에 오늘 뉴스가 있는지 확인
         List<StockNews> existingNews = repository.findByNewsDateOrderByCreatedAtDesc(today);

@@ -21,6 +21,7 @@ services:
     build:
       context: .
     environment:
+      TZ: Asia/Seoul
       SPRING_PROFILES_ACTIVE: prod
       # .env에 빈 문자열이 있어도 기본값 유지 (:- 문법)
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/myimagelog?sslmode=disable}
