@@ -39,6 +39,9 @@ services:
       # JWT
       APP_JWT_SECRET: ${APP_JWT_SECRET:-myimagelogserver-jwt-secret-key-min-32chars-long}
 
+      # 개인정보/이미지 AES-256 암호화 키 (32바이트 Base64)
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY}
+
       # base url (외부 엔드포인트)
       SERVER_URL: ${SERVER_URL:-http://localhost:8080}
 

@@ -1,6 +1,7 @@
 package com.imglog.myimagelogserver.image.storage;
 
 import com.imglog.myimagelogserver.image.service.StoredFile;
+import com.imglog.myimagelogserver.security.crypto.EncryptionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -10,21 +11,23 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Component
-public class LocalStorage implements StoragePort{
+public class LocalStorage implements StoragePort {
 
     private final Path baseDir;
     private final String publicUrlBase;
+    private final EncryptionService encryptionService;
 
     public LocalStorage(
             @Value("${app.upload.base-dir:uploads}") String baseDir,
-            @Value("${app.upload.public-url-base:http://localhost:8000/files}") String publicUrlBase
+            @Value("${app.upload.public-url-base:http://localhost:8080/files}") String publicUrlBase,
+            EncryptionService encryptionService
     ) {
         this.baseDir = Paths.get(baseDir).toAbsolutePath().normalize();
-        this.publicUrlBase = publicUrlBase;
+        this.publicUrlBase = publicUrlBase.endsWith("/") ? publicUrlBase.substring(0, publicUrlBase.length() - 1) : publicUrlBase;
+        this.encryptionService = encryptionService;
     }
 
     @Override
@@ -33,14 +36,14 @@ public class LocalStorage implements StoragePort{
 
         String original = file.getOriginalFilename();
         String safeOriginal = sanitize(original);
-
-        // 저장 키 (파일명) : UUID + 원본파일명
         String objectKey = UUID.randomUUID() + "_" + safeOriginal;
 
+        byte[] plain = file.getBytes();
+        byte[] toWrite = encryptionService.encryptFile(plain);
         Path target = baseDir.resolve(objectKey).normalize();
-        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+        Files.write(target, toWrite);
 
-        String url = publicUrlBase + "/" +objectKey;
+        String url = publicUrlBase + "/" + objectKey;
 
         return new StoredFile(
                 "Local",
@@ -50,6 +53,18 @@ public class LocalStorage implements StoragePort{
                 file.getSize(),
                 (StringUtils.hasText(original) ? original : safeOriginal)
         );
+    }
+
+    public Path resolvePath(String objectKey) {
+        Path resolved = baseDir.resolve(objectKey).normalize();
+        if (!resolved.startsWith(baseDir)) {
+            throw new IllegalArgumentException("잘못된 파일 경로입니다.");
+        }
+        return resolved;
+    }
+
+    public Path baseDir() {
+        return baseDir;
     }
 
     private String sanitize(String original) {

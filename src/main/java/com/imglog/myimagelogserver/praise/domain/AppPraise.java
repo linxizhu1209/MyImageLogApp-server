@@ -1,6 +1,7 @@
 package com.imglog.myimagelogserver.praise.domain;
 
 import com.imglog.myimagelogserver.image.domain.BaseEntity;
+import com.imglog.myimagelogserver.security.crypto.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,10 +15,15 @@ public class AppPraise extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false, length = 30)
+
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(nullable = false, length = 512)
     private String nickname;
-    @Column(nullable = false, length = 500)
+
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(nullable = false, length = 2048)
     private String content;
+
     public static AppPraise create(String nickname, String content) {
         AppPraise p = new AppPraise();
         p.nickname = nickname;

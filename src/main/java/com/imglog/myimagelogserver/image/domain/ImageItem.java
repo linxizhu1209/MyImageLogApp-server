@@ -1,10 +1,9 @@
 package com.imglog.myimagelogserver.image.domain;
 
+import com.imglog.myimagelogserver.security.crypto.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 @Getter
 @EntityListeners(AuditingEntityListener.class)
@@ -32,16 +31,19 @@ public class ImageItem extends BaseEntity {
     @Column(nullable = false, length = 1000)
     private String url;
 
-    @Column(nullable = false, length = 500)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(nullable = false, length = 1024)
     private String originalName;
 
     @Column(nullable = false)
     private long size;
 
-    @Column(length = 200)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(length = 512)
     private String title;
 
-    @Column(length = 2000)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(length = 4096)
     private String content;
 
     protected ImageItem() {}
@@ -71,6 +73,7 @@ public class ImageItem extends BaseEntity {
         this.title = title;
         this.content = content;
     }
+
     public enum StorageType {
         LOCAL, S3
     }
