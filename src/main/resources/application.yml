@@ -50,6 +50,9 @@ spring:
             user-name-attribute: id
 
 app:
+  encryption:
+    enabled: true
+    key-base64: ${APP_ENCRYPTION_KEY}
   upload:
     base-dir: uploads
     # 외부에서 접근 가능한 base URL (배포 시 SERVER_URL=https://api.lovelyju.com)

@@ -1,6 +1,7 @@
 package com.imglog.myimagelogserver.stockreport.domain;
 
 import com.imglog.myimagelogserver.image.domain.BaseEntity;
+import com.imglog.myimagelogserver.security.crypto.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,7 +23,8 @@ public class StockReportSubscription extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(nullable = false, length = 255)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(nullable = false, length = 512)
     private String email;
 
     @Column(name = "symbols_json", nullable = false, columnDefinition = "TEXT")

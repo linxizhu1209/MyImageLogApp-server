@@ -3,19 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MyImageLog - 나만의 이미지 로그 앱</title>
-  <meta name="description" content="MyImageLog 안드로이드 앱 소개 및 APK 다운로드 페이지" />
+  <title>MyImageLog - 사진과 AI로 기록하는 나만의 일상</title>
+  <meta name="description" content="사진·글 일기, AI 주간 요약, 감정 분석, 해외·국내 주식 리포트까지. MyImageLog 안드로이드 앱 소개 및 APK 다운로드." />
   <meta property="og:title" content="MyImageLog" />
-  <meta property="og:description" content="사진과 함께 기록하는 나만의 일상 로그" />
+  <meta property="og:description" content="사진과 함께 기록하고, AI가 한 주를 요약해 주는 일상 로그 앱" />
   <meta property="og:type" content="website" />
-  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
+  <meta property="og:image" content="/assets/screenshots/home.png" />
+  <link rel="icon" type="image/webp" href="/assets/logo.webp" />
   <link rel="stylesheet" href="/assets/style.css" />
 </head>
 <body>
   <header class="hero">
-    <img src="/assets/logo.svg" alt="MyImageLog" class="logo" />
+    <img src="/assets/logo.webp" alt="MyImageLog" class="logo" width="96" height="96" />
     <h1>MyImageLog</h1>
-    <p class="tagline">사진과 함께 기록하는 나만의 일상 로그</p>
+    <p class="tagline">사진과 글로 남기는 하루, AI가 돌아보는 한 주</p>
+    <p class="hero-desc">
+      오늘의 순간을 사진과 메모로 기록하고, 이번 주 통계·감정 트렌드·이미지 분위기까지
+      한눈에 확인하세요. 해외 주식 이슈 요약과 국내 주식 리포트 구독도 함께 제공합니다.
+    </p>
 
     <a class="cta" href="/download/apk" download>
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
@@ -24,25 +29,59 @@
       <span>APK 다운로드</span>
     </a>
 
-    <p class="version">Android 7.0(API 24) 이상 지원</p>
+    <p class="version">Android 7.0 (API 24) 이상 지원</p>
   </header>
 
   <main>
     <section class="screens">
-      <h2>화면 미리보기</h2>
-      <div class="grid">
-        <div class="screen-placeholder">
-          <span>홈 화면</span>
-          <small>스크린샷 준비 중</small>
-        </div>
-        <div class="screen-placeholder">
-          <span>업로드 화면</span>
-          <small>스크린샷 준비 중</small>
-        </div>
-        <div class="screen-placeholder">
-          <span>상세 화면</span>
-          <small>스크린샷 준비 중</small>
-        </div>
+      <h2>앱 미리보기</h2>
+      <p class="section-lead">일상 기록부터 AI 분석, 투자 정보까지 한 앱에서 경험할 수 있습니다.</p>
+      <div class="screen-grid">
+        <figure class="screen-card">
+          <div class="screen-img">
+            <img src="/assets/screenshots/home.png" alt="홈 화면 — 이번 주 기록과 AI 요약, 해외주식 이슈" loading="lazy" />
+          </div>
+          <figcaption>
+            <strong>홈</strong>
+            <span>이번 주 기록·AI 요약<br>해외주식 이슈</span>
+          </figcaption>
+        </figure>
+        <figure class="screen-card">
+          <div class="screen-img">
+            <img src="/assets/screenshots/record.png" alt="기록하기 화면 — 제목, 내용, 사진 최대 10장 업로드" loading="lazy" />
+          </div>
+          <figcaption>
+            <strong>기록하기</strong>
+            <span>제목·내용·사진(최대 10장) 업로드</span>
+          </figcaption>
+        </figure>
+        <figure class="screen-card">
+          <div class="screen-img">
+            <img src="/assets/screenshots/ai-analysis.png" alt="AI 주간 분석 — Gemini Vision과 LLM 감정 분석" loading="lazy" />
+          </div>
+          <figcaption>
+            <strong>AI 주간 분석</strong>
+            <span>Gemini Vision·LLM 활용한 주간 분석·이미지 감정 분석</span>
+          </figcaption>
+        </figure>
+        <figure class="screen-card">
+          <div class="screen-img">
+            <img src="/assets/screenshots/stock-subscribe.png" alt="국내주식 리포트 구독 — 종목과 이메일 등록" loading="lazy" />
+          </div>
+          <figcaption>
+            <strong>국내주식 리포트</strong>
+            <span>관심 종목·이메일로 리포트 구독</span>
+          </figcaption>
+        </figure>
+        <figure class="screen-card screen-card--contain">
+          <div class="screen-img">
+            <img src="/assets/screenshots/reviews.png" alt="칭찬과 후기 — 사용자 피드백" loading="lazy" />
+          </div>
+          <figcaption>
+            <strong>칭찬 &amp; 후기</strong>
+            <span>따뜻한 한마디 남기기</span>
+          </figcaption>
+        </figure>
       </div>
     </section>
 
@@ -50,20 +89,28 @@
       <h2>주요 기능</h2>
       <ul class="feature-list">
         <li>
-          <strong>사진 업로드 + 메모</strong>
-          <p>찍은 사진과 함께 그날의 메모를 한 번에 저장하세요.</p>
+          <strong>📷 사진 + 메모 기록</strong>
+          <p>하루의 순간을 제목·내용·사진(최대 10장)으로 남기고 서버에 안전하게 저장합니다.</p>
         </li>
         <li>
-          <strong>주간 / 일별 타임라인</strong>
-          <p>날짜별로 정리되는 타임라인에서 추억을 쉽게 되돌아볼 수 있어요.</p>
+          <strong>✨ AI 이번 주 요약</strong>
+          <p>한 주의 기록을 LLM이 요약하고, 긍정·중립·부정 감정 비율과 트렌드를 분석합니다.</p>
         </li>
         <li>
-          <strong>구글 / 카카오 로그인</strong>
-          <p>별도 회원가입 없이 OAuth로 빠르게 시작할 수 있습니다.</p>
+          <strong>🖼️ 이미지 분위기 분석</strong>
+          <p>업로드한 사진을 Gemini Vision으로 분석해 이번 주의 전체적인 분위기를 집계합니다.</p>
         </li>
         <li>
-          <strong>서버 동기화</strong>
-          <p>기기를 바꿔도 안전하게 데이터가 보존됩니다.</p>
+          <strong>📈 해외·국내 주식 정보</strong>
+          <p>해외 시장 AI 요약·뉴스 피드와, 국내 종목 리포트 이메일 구독을 지원합니다.</p>
+        </li>
+        <li>
+          <strong>📅 주간 타임라인</strong>
+          <p>날짜별 기록 수·기록 일수 등 통계로 한 주를 되돌아볼 수 있습니다.</p>
+        </li>
+        <li>
+          <strong>🔐 간편 로그인 &amp; 동기화</strong>
+          <p>구글·카카오 OAuth로 빠르게 시작하고, 기기를 바꿔도 데이터가 유지됩니다.</p>
         </li>
       </ul>
     </section>
@@ -83,9 +130,12 @@
     <section class="qr">
       <h2>PC에서 보고 계신가요?</h2>
       <p class="qr-desc">
-        아래 주소를 모바일 브라우저로 열거나, QR 스캐너로 찍어주세요.
+        스마트폰 카메라로 아래 QR 코드를 스캔하거나, 주소를 복사해 모바일 브라우저에서 열어주세요.
       </p>
-      <code class="link" id="page-url">로딩 중...</code>
+      <div class="qr-panel">
+        <div id="qr-code" class="qr-box" role="img" aria-label="이 페이지 QR 코드"></div>
+        <code class="link" id="page-url">로딩 중...</code>
+      </div>
     </section>
   </main>
 
@@ -95,12 +145,24 @@
       ·
       <a href="https://github.com/linxizhu1209/MyImageLogApp-server" target="_blank" rel="noopener">Server</a>
       ·
-      <a href="https://github.com/linxizhu1209/MyImageLogApp-master" target="_blank" rel="noopener">App</a>
+      <a href="https://github.com/linxizhu1209/MyImageLogApp" target="_blank" rel="noopener">App</a>
     </p>
   </footer>
 
+  <script src="/assets/js/qrcode.min.js"></script>
   <script>
-    document.getElementById('page-url').textContent = window.location.origin;
+    (function () {
+      var url = window.location.href;
+      document.getElementById('page-url').textContent = url;
+      new QRCode(document.getElementById('qr-code'), {
+        text: url,
+        width: 180,
+        height: 180,
+        colorDark: '#0f1115',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    })();
   </script>
 </body>
 </html>

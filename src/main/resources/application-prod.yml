@@ -24,6 +24,11 @@ spring:
     console:
       enabled: false
 
+app:
+  encryption:
+    enabled: true
+    key-base64: ${APP_ENCRYPTION_KEY}
+
 logging:
   level:
     root: INFO
