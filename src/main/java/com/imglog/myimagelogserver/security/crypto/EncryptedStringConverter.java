@@ -6,19 +6,13 @@ import jakarta.persistence.Converter;
 @Converter(autoApply = false)
 public class EncryptedStringConverter implements AttributeConverter<String, String> {
 
-    private final EncryptionService encryptionService;
-
-    public EncryptedStringConverter(EncryptionService encryptionService) {
-        this.encryptionService = encryptionService;
-    }
-
     @Override
     public String convertToDatabaseColumn(String attribute) {
-        return encryptionService.encryptText(attribute);
+        return EncryptionRegistry.get().encryptText(attribute);
     }
 
     @Override
     public String convertToEntityAttribute(String dbData) {
-        return encryptionService.decryptText(dbData);
+        return EncryptionRegistry.get().decryptText(dbData);
     }
 }

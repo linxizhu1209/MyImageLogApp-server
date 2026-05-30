@@ -36,6 +36,7 @@ public class EncryptionService {
         byte[] keyMaterial = decodeKey(properties.keyBase64());
         this.aesKey = new SecretKeySpec(keyMaterial, "AES");
         this.hmacKey = new SecretKeySpec(deriveHmacKey(keyMaterial), HMAC_SHA256);
+        EncryptionRegistry.register(this);
     }
 
     public boolean isEnabled() {
@@ -142,14 +143,39 @@ public class EncryptionService {
     private static byte[] decodeKey(String keyBase64) {
         if (keyBase64 == null || keyBase64.isBlank()) {
             throw new IllegalStateException(
-                    "app.encryption.key-base64 가 필요합니다. (32바이트 Base64, 환경변수 APP_ENCRYPTION_KEY)"
+                    "APP_ENCRYPTION_KEY 가 필요합니다. 서버에서 openssl rand -base64 32 로 생성하세요."
             );
         }
-        byte[] key = Base64.getDecoder().decode(keyBase64.trim());
+        String normalized = normalizeKey(keyBase64);
+        byte[] key;
+        try {
+            key = Base64.getDecoder().decode(normalized);
+        } catch (IllegalArgumentException ex) {
+            try {
+                key = Base64.getUrlDecoder().decode(normalized);
+            } catch (IllegalArgumentException ex2) {
+                throw new IllegalStateException(
+                        "APP_ENCRYPTION_KEY 가 올바른 Base64가 아닙니다. "
+                                + "비밀번호/UUID(하이픈 포함)가 아니라 openssl rand -base64 32 결과를 넣어주세요.",
+                        ex
+                );
+            }
+        }
         if (key.length != 32) {
-            throw new IllegalStateException("암호화 키는 32바이트(AES-256)여야 합니다. 현재=" + key.length);
+            throw new IllegalStateException(
+                    "APP_ENCRYPTION_KEY 는 32바이트(AES-256)여야 합니다. 현재=" + key.length
+                            + "바이트. openssl rand -base64 32 로 다시 생성하세요."
+            );
         }
         return key;
+    }
+
+    private static String normalizeKey(String raw) {
+        String value = raw.trim();
+        if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.substring(1, value.length() - 1).trim();
+        }
+        return value.replaceAll("\\s+", "");
     }
 
     private static byte[] deriveHmacKey(byte[] master) {
