@@ -76,6 +76,7 @@ services:
       - "5678:5678"
     environment:
       - TZ=Asia/Seoul
+      - GENERIC_TIMEZONE=Asia/Seoul
       - N8N_HOST=n8n.lovelyju.com
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
